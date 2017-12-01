@@ -9,7 +9,8 @@ var petPath = require('./pets.json')
 var bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
-//app.use(restfulExpressServer);
+
+/* ======================= Get ======================= */
 
 app.get('/pets', function(req, res) {
   fs.readFile('./pets.json', 'utf8', function(err, data) {
@@ -44,6 +45,9 @@ app.get('/pets/:id', function(req, res) {
     res.send(pets[id]);
   });
 });
+
+/* ======================= Post ======================= */
+
 
 app.post('/pets', function(req, res) {
   fs.readFile('./pets.json', 'utf8', function(err, data) {
@@ -84,6 +88,85 @@ app.post('/pets', function(req, res) {
   });
 });
 
+/* ======================= Patch ======================= */
+
+app.patch('/pets/:id', function(req, res) {
+  fs.readFile('./pets.json', 'utf8', function(err, data) {
+//console.log(req.body)
+
+    if (err) {
+      console.log(err);
+    }
+
+    var id = Number.parseInt(req.params.id);
+    var pets = JSON.parse(data);
+
+    if (id < 0 || id >= pets.length || Number.isNaN(id)) {
+      res.set('Content-Type', 'text/plain');
+      res.sendStatus(404);
+    }
+
+    var petName = req.body.name;
+    var petAge = req.body.age;
+    var petKind = req.body.kind;
+    var pet = pets[id];
+    var petKeys = Object.keys(req.body);
+
+    for (let i=0; i<petKeys.length; i++){
+      pet[petKeys[i]] = req.body[petKeys[i]];
+
+    }
+
+    let petString = JSON.stringify(pets)
+
+    fs.writeFile('./pets.json', petString, function(err, data) {
+      if (err) {
+        console.log(err);
+      }
+      res.set('Content-Type', 'application/json');
+      res.send(pet);
+    });
+
+    res.end();
+  });
+});
+
+/* ======================= Delete ======================= */
+
+app.delete('/pets/:id', function(req, res) {
+  fs.readFile('./pets.json', 'utf8', function(err, data) {
+//console.log(req.body)
+
+    if (err) {
+      console.log(err);
+    }
+
+    var id = Number.parseInt(req.params.id);
+    var pets = JSON.parse(data);
+
+    if (id < 0 || id >= pets.length || Number.isNaN(id)) {
+      res.set('Content-Type', 'text/plain');
+      res.sendStatus(404);
+    }
+
+    var newPet = pets.splice(id, 1)[0];
+    //var newPetsObject = newPets[0]
+
+
+    var newPetsJSON = JSON.stringify(pets);
+
+    fs.writeFile('./pets.json', newPetsJSON, function(err, data) {
+      if (err) {
+        console.log(err);
+      }
+      res.set('Content-Type', 'application/json');
+      res.send(newPet);
+
+    });
+
+  });
+});
+
 app.use(function(req, res) {
   res.set('Content-Type', 'text/plain');
   res.sendStatus(404);
@@ -94,6 +177,28 @@ app.use(function(req, res) {
 app.listen(port, function() {
   console.log('Listening on port', port);
 });
+
+
+module.exports = app;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports = app;
